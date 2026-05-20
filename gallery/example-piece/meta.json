@@ -1,0 +1,9 @@
+{
+  "title": "Example Artwork",
+  "artist": "Your Name",
+  "medium": "Digital",
+  "statement": "Replace this with a real piece of artwork.\n\nDrop an image file named art.png in this directory and update this meta.json with the artwork's details.",
+  "url": "https://github.com/your-username/mussheum",
+  "artistUrl": "https://your-website.com",
+  "dateAdded": "2026-01-01"
+}

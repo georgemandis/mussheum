@@ -1,0 +1,24 @@
+# Build artifacts
+tui/mussheum-tui
+server/mussheum-server
+server/mussheum-server-test
+
+# Dependencies
+tui/node_modules/
+worker/node_modules/
+worker/.wrangler/
+
+# Server runtime
+server/.ssh/
+server/access.log
+visitors.count
+
+# Environment
+.env
+
+# OS
+.DS_Store
+
+# Editors
+.cursor/
+.claude/

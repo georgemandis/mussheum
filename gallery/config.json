@@ -1,0 +1,10 @@
+{
+  "name": "mussheum",
+  "tagline": "an ssh art gallery",
+  "exhibition": "Example Exhibition",
+  "accentColor": "cyan",
+  "secondaryColor": "magenta",
+  "curationDate": "2026",
+  "utmSource": "mussheum",
+  "utmMedium": "ssh"
+}
