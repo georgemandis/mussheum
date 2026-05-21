@@ -208,7 +208,9 @@ Returns JSON with name, tagline, exhibition, hours, status, and artwork count.
 
 ## Deployment
 
-A `Dockerfile` and `fly.toml` are included for deploying to [Fly.io](https://fly.io).
+The included `Dockerfile`, `fly.toml`, and `worker/` are set up for [Fly.io](https://fly.io) (hosting) and [Cloudflare](https://www.cloudflare.com/) (R2 for submission storage, Workers for email notifications). These are the first-class deployment targets, but nothing about the architecture is tightly coupled to them — the server is a standard Docker container, submissions go to any S3-compatible storage, and the email worker is optional.
+
+### Fly.io
 
 ```bash
 fly launch
@@ -218,6 +220,22 @@ fly deploy
 ```
 
 The server exposes SSH on port 22 and HTTP on port 443 (via Fly's proxy).
+
+### Stats
+
+A pair of scripts in `scripts/` let you check visitor stats from your access log:
+
+```bash
+# Run against a local log file
+./scripts/stats.sh today server/access.log
+
+# Pull the log from Fly and run stats locally
+./scripts/fly-stats.sh          # today (default)
+./scripts/fly-stats.sh week     # last 7 days
+./scripts/fly-stats.sh all      # all time
+```
+
+`fly-stats.sh` reads your app name from `fly.toml` and uses `fly ssh sftp get` to fetch the log.
 
 ## Controls
 
@@ -278,6 +296,9 @@ mussheum/
       exit-screen.tsx         # Exit screen
       subscribe-prompt.tsx    # In-terminal newsletter subscription
       footer.tsx              # Keybinding hints
+  scripts/
+    stats.sh                    # Parse access log and report visitor stats
+    fly-stats.sh                # Pull log from Fly and run stats locally
   worker/                       # Optional: Cloudflare Worker for email notifications
     src/index.js                # Queue consumer + email sender
     wrangler.toml               # Worker configuration
