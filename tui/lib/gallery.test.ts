@@ -1,5 +1,8 @@
 import { describe, test, expect } from "bun:test";
-import { checkGalleryHours, formatNextOpening, type GalleryConfig } from "./gallery";
+import { checkGalleryHours, formatNextOpening, loadGallery, type GalleryConfig } from "./gallery";
+import { mkdtemp, mkdir, writeFile, rm } from "fs/promises";
+import { join } from "path";
+import { tmpdir } from "os";
 
 function makeConfig(hours: GalleryConfig["hours"]): GalleryConfig {
   return {
@@ -147,5 +150,76 @@ describe("formatNextOpening", () => {
     const future = new Date(Date.now() + 3 * 86400 * 1000); // 3 days
     const result = formatNextOpening(future);
     expect(result).toContain("3d");
+  });
+});
+
+describe("loadGallery", () => {
+  const makeMeta = (title: string) => JSON.stringify({
+    title,
+    artist: "Test Artist",
+    url: "https://example.com",
+    dateAdded: "2026-01-01",
+  });
+
+  test("detects art.gif as animated", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "gallery-test-"));
+    const artDir = join(tempDir, "gif-artwork");
+    await mkdir(artDir);
+    await writeFile(join(artDir, "meta.json"), makeMeta("GIF Test"));
+    await writeFile(join(artDir, "art.gif"), Buffer.from("GIF89a"));
+
+    const artworks = await loadGallery(tempDir);
+    expect(artworks).toHaveLength(1);
+    expect(artworks[0]!.isAnimated).toBe(true);
+    expect(artworks[0]!.hasImage).toBe(true);
+    expect(artworks[0]!.imagePath).toContain("art.gif");
+
+    await rm(tempDir, { recursive: true });
+  });
+
+  test("detects art.png as not animated", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "gallery-test-"));
+    const artDir = join(tempDir, "png-artwork");
+    await mkdir(artDir);
+    await writeFile(join(artDir, "meta.json"), makeMeta("PNG Test"));
+    await writeFile(join(artDir, "art.png"), Buffer.from("PNG"));
+
+    const artworks = await loadGallery(tempDir);
+    expect(artworks).toHaveLength(1);
+    expect(artworks[0]!.isAnimated).toBe(false);
+    expect(artworks[0]!.hasImage).toBe(true);
+    expect(artworks[0]!.imagePath).toContain("art.png");
+
+    await rm(tempDir, { recursive: true });
+  });
+
+  test("prefers art.gif over art.png when both exist", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "gallery-test-"));
+    const artDir = join(tempDir, "both-artwork");
+    await mkdir(artDir);
+    await writeFile(join(artDir, "meta.json"), makeMeta("Both Test"));
+    await writeFile(join(artDir, "art.gif"), Buffer.from("GIF89a"));
+    await writeFile(join(artDir, "art.png"), Buffer.from("PNG"));
+
+    const artworks = await loadGallery(tempDir);
+    expect(artworks).toHaveLength(1);
+    expect(artworks[0]!.isAnimated).toBe(true);
+    expect(artworks[0]!.imagePath).toContain("art.gif");
+
+    await rm(tempDir, { recursive: true });
+  });
+
+  test("handles no image gracefully", async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), "gallery-test-"));
+    const artDir = join(tempDir, "no-image");
+    await mkdir(artDir);
+    await writeFile(join(artDir, "meta.json"), makeMeta("No Image Test"));
+
+    const artworks = await loadGallery(tempDir);
+    expect(artworks).toHaveLength(1);
+    expect(artworks[0]!.isAnimated).toBe(false);
+    expect(artworks[0]!.hasImage).toBe(false);
+
+    await rm(tempDir, { recursive: true });
   });
 });

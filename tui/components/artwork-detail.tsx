@@ -3,6 +3,7 @@ import { HalfBlockImage } from "ink-picture";
 import { useState } from "react";
 import type { Artwork, GalleryConfig } from "../lib/gallery.js";
 import { useTerminalSize } from "../lib/useTerminalSize.js";
+import { AnimatedHalfBlockImage } from "./animated-half-block-image.js";
 
 type Props = {
   artwork: Artwork;
@@ -43,14 +44,25 @@ export function ArtworkDetail({ artwork, config }: Props) {
 
   const imageBox = artwork.hasImage && imageSupported ? (
     <Box height={imageHeight} width={imageWidth}>
-      <HalfBlockImage
-        src={artwork.imagePath}
-        height={imageHeight}
-        alt={artwork.title}
-        onSupportDetected={(supported) => {
-          if (!supported) setImageSupported(false);
-        }}
-      />
+      {artwork.isAnimated ? (
+        <AnimatedHalfBlockImage
+          src={artwork.imagePath}
+          height={imageHeight}
+          alt={artwork.title}
+          onSupportDetected={(supported) => {
+            if (!supported) setImageSupported(false);
+          }}
+        />
+      ) : (
+        <HalfBlockImage
+          src={artwork.imagePath}
+          height={imageHeight}
+          alt={artwork.title}
+          onSupportDetected={(supported) => {
+            if (!supported) setImageSupported(false);
+          }}
+        />
+      )}
     </Box>
   ) : (
     <Box height={imageHeight} width={imageWidth} alignItems="center" justifyContent="center">

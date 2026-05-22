@@ -15,6 +15,7 @@ export type Artwork = ArtworkMeta & {
   slug: string;
   imagePath: string;
   hasImage: boolean;
+  isAnimated: boolean;
 };
 
 export type CuratorNote = {
@@ -129,15 +130,26 @@ export async function loadGallery(galleryDir: string): Promise<Artwork[]> {
         continue;
       }
 
-      const imagePath = join(galleryDir, slug, "art.png");
+      // Check for art.gif first, then art.png
+      let imagePath = join(galleryDir, slug, "art.gif");
       let hasImage = false;
+      let isAnimated = false;
       try {
-        await readFile(imagePath, { flag: "r" }).then(() => { hasImage = true; });
+        await readFile(imagePath, { flag: "r" });
+        hasImage = true;
+        isAnimated = true;
       } catch {
-        // art.png missing — that's fine, we'll show metadata only
+        // No gif, try png
+        imagePath = join(galleryDir, slug, "art.png");
+        try {
+          await readFile(imagePath, { flag: "r" });
+          hasImage = true;
+        } catch {
+          // No image — that's fine, we'll show metadata only
+        }
       }
 
-      artworks.push({ ...meta, slug, imagePath, hasImage });
+      artworks.push({ ...meta, slug, imagePath, hasImage, isAnimated });
     } catch (err) {
       console.error(`Skipping ${slug}: ${err}`);
     }

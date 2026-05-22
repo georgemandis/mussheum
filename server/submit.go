@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"image"
 	_ "image/jpeg"
+	_ "image/gif"
 	_ "image/png"
 	"io"
 	"os"
@@ -221,8 +222,11 @@ func handleSubmission(s ssh.Session) {
 
 	// Upload image
 	imageContentType := "image/png"
-	if imageExt == ".jpg" || imageExt == ".jpeg" {
+	switch imageExt {
+	case ".jpg", ".jpeg":
 		imageContentType = "image/jpeg"
+	case ".gif":
+		imageContentType = "image/gif"
 	}
 	_, err = client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      &bucket,
@@ -275,7 +279,7 @@ func validateZip(zr *zip.Reader) (*SubmissionMeta, []byte, string, error) {
 			metaFile = f
 		} else {
 			ext := strings.ToLower(path.Ext(base))
-			if ext == ".png" || ext == ".jpg" || ext == ".jpeg" {
+			if ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".gif" {
 				if imgFile != nil {
 					return nil, nil, "", fmt.Errorf("zip contains multiple images — include exactly one")
 				}
@@ -289,7 +293,7 @@ func validateZip(zr *zip.Reader) (*SubmissionMeta, []byte, string, error) {
 		return nil, nil, "", fmt.Errorf("missing meta.json")
 	}
 	if imgFile == nil {
-		return nil, nil, "", fmt.Errorf("missing image file (png or jpg)")
+		return nil, nil, "", fmt.Errorf("missing image file (png, jpg, or gif)")
 	}
 
 	// Parse meta.json
