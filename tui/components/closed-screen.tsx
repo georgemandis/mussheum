@@ -1,6 +1,7 @@
-import { Box, Text, useStdout } from "ink";
+import { Box, Text } from "ink";
 import { useState, useEffect } from "react";
 import { formatNextOpening, type GalleryConfig, type GalleryStatus } from "../lib/gallery.js";
+import { useTerminalSize } from "../lib/useTerminalSize.js";
 
 type Props = {
   config: GalleryConfig | null;
@@ -9,9 +10,7 @@ type Props = {
 };
 
 export function ClosedScreen({ config, status, onOpen }: Props) {
-  const { stdout } = useStdout();
-  const rows = stdout?.rows ?? 24;
-  const cols = stdout?.columns ?? 80;
+  const { rows, cols } = useTerminalSize();
   const accent = config?.accentColor ?? "cyan";
   const name = config?.name ?? "mussheum";
   const [now, setNow] = useState(() => new Date());

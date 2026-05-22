@@ -1,14 +1,13 @@
-import { Box, Text, useStdout } from "ink";
+import { Box, Text } from "ink";
 import type { GalleryConfig } from "../lib/gallery.js";
+import { useTerminalSize } from "../lib/useTerminalSize.js";
 
 type Props = {
   config: GalleryConfig | null;
 };
 
 export function ExitScreen({ config }: Props) {
-  const { stdout } = useStdout();
-  const rows = stdout?.rows ?? 24;
-  const cols = stdout?.columns ?? 80;
+  const { rows, cols } = useTerminalSize();
   const accent = config?.accentColor ?? "cyan";
   const name = config?.name ?? "mussheum";
 

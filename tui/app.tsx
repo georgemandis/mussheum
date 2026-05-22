@@ -1,5 +1,6 @@
-import { Box, useApp, useInput, useStdout } from "ink";
+import { Box, useApp, useInput } from "ink";
 import { useState, useCallback, useEffect } from "react";
+import { useTerminalSize } from "./lib/useTerminalSize.js";
 import { Splash } from "./components/splash.js";
 import { GalleryList } from "./components/gallery-list.js";
 import { ArtworkDetail } from "./components/artwork-detail.js";
@@ -26,9 +27,7 @@ type Props = {
 
 export function App({ userKey }: Props) {
   const { exit } = useApp();
-  const { stdout } = useStdout();
-  const rows = stdout?.rows ?? 24;
-  const cols = stdout?.columns ?? 80;
+  const { rows, cols } = useTerminalSize();
   const [screen, setScreen] = useState<Screen>({ type: "splash" });
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);

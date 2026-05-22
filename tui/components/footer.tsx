@@ -1,5 +1,6 @@
-import { Box, Text, useStdout } from "ink";
+import { Box, Text } from "ink";
 import type { GalleryConfig } from "../lib/gallery.js";
+import { useTerminalSize } from "../lib/useTerminalSize.js";
 
 type Props = {
   screen: string;
@@ -15,8 +16,7 @@ const hints: Record<string, string[]> = {
 };
 
 export function Footer({ screen, config, prevTitle, nextTitle, hasArchive }: Props) {
-  const { stdout } = useStdout();
-  const cols = stdout?.columns ?? 80;
+  const { cols } = useTerminalSize();
   const items = [...(hints[screen] ?? [])];
   if (screen === "list" && hasArchive) items.push("a archive");
   if (screen === "list") items.push("s subscribe");

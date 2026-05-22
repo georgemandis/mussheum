@@ -1,6 +1,7 @@
-import { Box, Text, useInput, useStdout } from "ink";
+import { Box, Text, useInput } from "ink";
 import { useState } from "react";
 import type { ArchivedExhibition, GalleryConfig } from "../lib/gallery.js";
+import { useTerminalSize } from "../lib/useTerminalSize.js";
 
 type Props = {
   archive: ArchivedExhibition[];
@@ -9,9 +10,7 @@ type Props = {
 };
 
 export function ArchiveScreen({ archive, config, onBack }: Props) {
-  const { stdout } = useStdout();
-  const rows = stdout?.rows ?? 24;
-  const cols = stdout?.columns ?? 80;
+  const { rows, cols } = useTerminalSize();
   const accent = config?.accentColor ?? "cyan";
   const [scrollOffset, setScrollOffset] = useState(0);
 

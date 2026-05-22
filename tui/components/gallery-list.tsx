@@ -1,6 +1,7 @@
-import { Box, Text, useInput, useStdout } from "ink";
+import { Box, Text, useInput } from "ink";
 import { useState } from "react";
 import type { Artwork, CuratorNote, GalleryConfig } from "../lib/gallery.js";
+import { useTerminalSize } from "../lib/useTerminalSize.js";
 
 type Props = {
   artworks: Artwork[];
@@ -12,8 +13,7 @@ type Props = {
 
 export function GalleryList({ artworks, onSelect, visitorCount, curatorNote, config }: Props) {
   const [selected, setSelected] = useState(0);
-  const { stdout } = useStdout();
-  const rows = stdout?.rows ?? 24;
+  const { rows, cols } = useTerminalSize();
   // Reserve space for header line, spacing, and footer
   const visibleRows = rows - 6;
 
@@ -36,7 +36,6 @@ export function GalleryList({ artworks, onSelect, visitorCount, curatorNote, con
   const accent = config?.accentColor ?? "magenta";
   const secondary = config?.secondaryColor ?? "cyan";
 
-  const cols = stdout?.columns ?? 80;
   const maxWidth = Math.min(cols, 100);
   const leftWidth = Math.floor(maxWidth * 0.4);
   const rightWidth = maxWidth - leftWidth;

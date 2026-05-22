@@ -1,7 +1,8 @@
-import { Box, Text, useStdout } from "ink";
+import { Box, Text } from "ink";
 import { HalfBlockImage } from "ink-picture";
 import { useState } from "react";
 import type { Artwork, GalleryConfig } from "../lib/gallery.js";
+import { useTerminalSize } from "../lib/useTerminalSize.js";
 
 type Props = {
   artwork: Artwork;
@@ -28,9 +29,7 @@ function visibleUrl(url: string): string {
 }
 
 export function ArtworkDetail({ artwork, config }: Props) {
-  const { stdout } = useStdout();
-  const rows = stdout?.rows ?? 24;
-  const cols = stdout?.columns ?? 80;
+  const { rows, cols } = useTerminalSize();
   const [imageSupported, setImageSupported] = useState(true);
   const accent = config?.accentColor ?? "cyan";
 

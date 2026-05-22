@@ -1,7 +1,8 @@
-import { Box, Text, useStdout } from "ink";
+import { Box, Text } from "ink";
 import BigText from "ink-big-text";
 import { useState, useEffect, type ReactNode } from "react";
 import type { GalleryConfig } from "../lib/gallery.js";
+import { useTerminalSize } from "../lib/useTerminalSize.js";
 
 type Props = {
   error?: string | null;
@@ -10,9 +11,7 @@ type Props = {
 };
 
 export function Splash({ error, children, config }: Props) {
-  const { stdout } = useStdout();
-  const rows = stdout?.rows ?? 24;
-  const cols = stdout?.columns ?? 80;
+  const { rows, cols } = useTerminalSize();
   const [showCursor, setShowCursor] = useState(true);
   const accent = config?.accentColor ?? "cyan";
   const name = config?.name ?? "mussheum";
