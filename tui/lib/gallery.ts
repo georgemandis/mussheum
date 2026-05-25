@@ -70,6 +70,7 @@ export type GalleryConfig = {
   hours?: HoursRule[] | "closed";
   subscribeEnabled?: boolean;
   sortOrder?: "newest" | "oldest" | "title" | "artist" | "random";
+  splash?: "bigtext" | "logo" | "ascii" | "image";
 };
 
 const defaultConfig: GalleryConfig = {
