@@ -43,18 +43,18 @@ export function App({ userKey }: Props) {
   // Load gallery from disk on mount
   useEffect(() => {
     const galleryDir = join(baseDir, "gallery");
-    loadGallery(galleryDir).then((items) => {
-      if (items.length === 0) {
-        setLoadError("No artwork found in gallery.");
-      } else {
-        setArtworks(items);
-      }
-    });
-    loadCuratorNote(galleryDir).then(setCuratorNote);
     loadGalleryConfig(galleryDir).then((cfg) => {
       setConfig(cfg);
       setGalleryStatus(checkGalleryHours(cfg));
+      loadGallery(galleryDir, cfg.sortOrder).then((items) => {
+        if (items.length === 0) {
+          setLoadError("No artwork found in gallery.");
+        } else {
+          setArtworks(items);
+        }
+      });
     });
+    loadCuratorNote(galleryDir).then(setCuratorNote);
     loadArchive(galleryDir).then(setArchive);
   }, []);
 
@@ -64,14 +64,14 @@ export function App({ userKey }: Props) {
 
     if (screen.type === "closed") {
       if (input === "q") exit();
-      if (input === "s") setSubscribing(true);
+      if (input === "s" && config?.subscribeEnabled !== false) setSubscribing(true);
       return;
     }
 
     if (screen.type === "list") {
       if (input === "q") setScreen({ type: "exit" });
       if (input === "a" && archive.length > 0) setScreen({ type: "archive" });
-      if (input === "s") setSubscribing(true);
+      if (input === "s" && config?.subscribeEnabled !== false) setSubscribing(true);
     }
 
     if (screen.type === "archive") {

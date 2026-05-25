@@ -80,7 +80,7 @@ export function ClosedScreen({ config, status, onOpen }: Props) {
           </Box>
         )}
         <Text> </Text>
-        <Text dimColor>s subscribe  q quit</Text>
+        <Text dimColor>{config?.subscribeEnabled !== false ? "s subscribe  " : ""}q quit</Text>
       </Box>
     </Box>
   );

@@ -19,7 +19,7 @@ export function Footer({ screen, config, prevTitle, nextTitle, hasArchive }: Pro
   const { cols } = useTerminalSize();
   const items = [...(hints[screen] ?? [])];
   if (screen === "list" && hasArchive) items.push("a archive");
-  if (screen === "list") items.push("s subscribe");
+  if (screen === "list" && config?.subscribeEnabled !== false) items.push("s subscribe");
   const name = config?.name ?? "mussheum";
 
   return (

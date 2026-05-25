@@ -68,6 +68,8 @@ export type GalleryConfig = {
   submissionsUrl?: string;
   submissionsCta?: string;
   hours?: HoursRule[] | "closed";
+  subscribeEnabled?: boolean;
+  sortOrder?: "newest" | "oldest" | "title" | "artist" | "random";
 };
 
 const defaultConfig: GalleryConfig = {
@@ -106,7 +108,7 @@ export async function loadCuratorNote(galleryDir: string): Promise<CuratorNote |
   }
 }
 
-export async function loadGallery(galleryDir: string): Promise<Artwork[]> {
+export async function loadGallery(galleryDir: string, sortOrder?: GalleryConfig["sortOrder"]): Promise<Artwork[]> {
   let entries: import("fs").Dirent[];
   try {
     entries = await readdir(galleryDir, { withFileTypes: true });
@@ -155,8 +157,28 @@ export async function loadGallery(galleryDir: string): Promise<Artwork[]> {
     }
   }
 
-  // Sort by dateAdded, newest first
-  artworks.sort((a, b) => b.dateAdded.localeCompare(a.dateAdded));
+  const order = sortOrder ?? "newest";
+  switch (order) {
+    case "oldest":
+      artworks.sort((a, b) => a.dateAdded.localeCompare(b.dateAdded));
+      break;
+    case "title":
+      artworks.sort((a, b) => a.title.localeCompare(b.title));
+      break;
+    case "artist":
+      artworks.sort((a, b) => a.artist.localeCompare(b.artist));
+      break;
+    case "random":
+      for (let i = artworks.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [artworks[i], artworks[j]] = [artworks[j], artworks[i]];
+      }
+      break;
+    case "newest":
+    default:
+      artworks.sort((a, b) => b.dateAdded.localeCompare(a.dateAdded));
+      break;
+  }
   return artworks;
 }
 
