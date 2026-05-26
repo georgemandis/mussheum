@@ -1,0 +1,31 @@
+{
+  "name": "mussheum",
+  "tagline": "an ssh art gallery",
+  "exhibition": "Example Exhibition",
+  "accentColor": "cyan",
+  "secondaryColor": "magenta",
+  "curationDate": "2026",
+  "utmSource": "mussheum",
+  "utmMedium": "ssh",
+
+  "newsletterUrl": "https://your-newsletter.example.com",
+  "newsletterCta": "Sign up for updates on our next exhibition",
+  "submissionsUrl": "https://your-gallery.example.com/submissions",
+  "submissionsCta": "Interested in showing your work?",
+
+  "subscribeEnabled": true,
+  "sortOrder": "newest",
+  "splash": "bigtext",
+
+  "submitMethod": "github-pr",
+  "submitRepo": "owner/repo",
+
+  "hours": [
+    {
+      "days": [1, 3, 5],
+      "open": "13:00",
+      "close": "15:00",
+      "tz": "America/New_York"
+    }
+  ]
+}
