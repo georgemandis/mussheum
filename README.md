@@ -106,13 +106,44 @@ A full example config with all available fields is also provided in `gallery/con
 | `splash`           | string                | Optional. Splash screen mode: `"bigtext"`, `"logo"`, `"ascii"`, or `"image"` (default `"bigtext"`) |
 | `submitMethod`     | string                | Optional. Set to `"github-pr"` to enable in-TUI submissions via GitHub PRs |
 | `submitRepo`       | string                | Required when `submitMethod` is set. GitHub repo in `owner/repo` format |
-| `auth`             | object                | Optional. OAuth authentication config (see below)                      |
+| `auth`             | object                | Optional. Authentication config: `"allowlist"` or `"oauth"` (see below) |
 
 ### Authentication
 
-Restrict gallery access to members of an OAuth-enabled community. When enabled, users with unrecognized SSH keys see a one-time auth URL. They authenticate in a browser, and their SSH key is permanently approved.
+Restrict gallery access to approved SSH keys. Auth is **disabled by default** — when the `auth` block is absent, everyone can access the gallery.
 
-Auth is **disabled by default**. To enable it, add an `auth` block to your config and set the required environment variables.
+Two modes are available:
+
+#### Allowlist mode
+
+Manually manage a list of approved SSH key fingerprints. Users with unrecognized keys are rejected.
+
+```json
+{
+  "auth": {
+    "provider": "allowlist"
+  }
+}
+```
+
+Approved keys are stored in `/data/approved-keys.json`. You can manage them by editing the file directly or using the admin API (see below). To get a user's key fingerprint:
+
+```bash
+ssh-keygen -lf ~/.ssh/id_ed25519.pub
+# SHA256:abc123...
+```
+
+The file format is a JSON array:
+
+```json
+[
+  { "fingerprint": "SHA256:...", "name": "Alice", "approved_at": "2026-01-01T00:00:00Z" }
+]
+```
+
+#### OAuth mode
+
+Automatically approve users who authenticate with an OAuth provider. Users with unrecognized SSH keys see a one-time auth URL, authenticate in a browser, and their key is permanently approved.
 
 ```json
 {
@@ -128,20 +159,18 @@ Auth is **disabled by default**. To enable it, add an `auth` block to your confi
 
 | Field              | Description                                                            |
 |--------------------|------------------------------------------------------------------------|
-| `provider`         | Must be `"oauth"`                                                      |
 | `authorizeUrl`     | OAuth authorization endpoint                                           |
 | `tokenUrl`         | OAuth token exchange endpoint                                          |
 | `profileUrl`       | API endpoint that returns user profile JSON (called with Bearer token) |
 | `profileNameField` | Optional. JSON field to use as display name. Falls back to `first_name`/`last_name`, `name`, `login`, `username` |
 
-**Environment variables** (required when auth is enabled):
+**Environment variables** (required for OAuth mode):
 
 | Variable            | Description                                              |
 |---------------------|----------------------------------------------------------|
 | `OAUTH_CLIENT_ID`   | OAuth app client ID                                      |
 | `OAUTH_CLIENT_SECRET` | OAuth app client secret                                |
 | `PUBLIC_URL`        | Your public-facing URL (e.g. `https://gallery.example.com`) |
-| `ADMIN_TOKEN`       | Optional. Enables admin API for key management           |
 
 **Setup:**
 
@@ -149,12 +178,16 @@ Auth is **disabled by default**. To enable it, add an `auth` block to your confi
 2. Set the redirect URI to `https://<your-public-url>/auth/callback`
 3. Set the env vars
 
-Approved keys are persisted to `/data/approved-keys.json`.
+#### Admin API
 
-**Admin API** (when `ADMIN_TOKEN` is set):
+When `ADMIN_TOKEN` is set, admin endpoints are available for managing approved keys. Works with both allowlist and OAuth modes.
 
 ```bash
-# Clear all approved keys (forces re-authentication)
+# List all approved keys
+curl https://<your-host>/auth/admin/keys \
+  -H "Authorization: Bearer <your-admin-token>"
+
+# Clear all approved keys
 curl -X POST https://<your-host>/auth/admin/clear-keys \
   -H "Authorization: Bearer <your-admin-token>"
 ```
