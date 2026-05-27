@@ -106,6 +106,58 @@ A full example config with all available fields is also provided in `gallery/con
 | `splash`           | string                | Optional. Splash screen mode: `"bigtext"`, `"logo"`, `"ascii"`, or `"image"` (default `"bigtext"`) |
 | `submitMethod`     | string                | Optional. Set to `"github-pr"` to enable in-TUI submissions via GitHub PRs |
 | `submitRepo`       | string                | Required when `submitMethod` is set. GitHub repo in `owner/repo` format |
+| `auth`             | object                | Optional. OAuth authentication config (see below)                      |
+
+### Authentication
+
+Restrict gallery access to members of an OAuth-enabled community. When enabled, users with unrecognized SSH keys see a one-time auth URL. They authenticate in a browser, and their SSH key is permanently approved.
+
+Auth is **disabled by default**. To enable it, add an `auth` block to your config and set the required environment variables.
+
+```json
+{
+  "auth": {
+    "provider": "oauth",
+    "authorizeUrl": "https://provider.example.com/oauth/authorize",
+    "tokenUrl": "https://provider.example.com/oauth/token",
+    "profileUrl": "https://provider.example.com/api/me",
+    "profileNameField": "name"
+  }
+}
+```
+
+| Field              | Description                                                            |
+|--------------------|------------------------------------------------------------------------|
+| `provider`         | Must be `"oauth"`                                                      |
+| `authorizeUrl`     | OAuth authorization endpoint                                           |
+| `tokenUrl`         | OAuth token exchange endpoint                                          |
+| `profileUrl`       | API endpoint that returns user profile JSON (called with Bearer token) |
+| `profileNameField` | Optional. JSON field to use as display name. Falls back to `first_name`/`last_name`, `name`, `login`, `username` |
+
+**Environment variables** (required when auth is enabled):
+
+| Variable            | Description                                              |
+|---------------------|----------------------------------------------------------|
+| `OAUTH_CLIENT_ID`   | OAuth app client ID                                      |
+| `OAUTH_CLIENT_SECRET` | OAuth app client secret                                |
+| `PUBLIC_URL`        | Your public-facing URL (e.g. `https://gallery.example.com`) |
+| `ADMIN_TOKEN`       | Optional. Enables admin API for key management           |
+
+**Setup:**
+
+1. Register an OAuth app with your provider
+2. Set the redirect URI to `https://<your-public-url>/auth/callback`
+3. Set the env vars
+
+Approved keys are persisted to `/data/approved-keys.json`.
+
+**Admin API** (when `ADMIN_TOKEN` is set):
+
+```bash
+# Clear all approved keys (forces re-authentication)
+curl -X POST https://<your-host>/auth/admin/clear-keys \
+  -H "Authorization: Bearer <your-admin-token>"
+```
 
 ### Gallery Hours
 
@@ -267,6 +319,10 @@ Returns JSON with name, tagline, exhibition, hours, status, and artwork count.
 | `R2_ENDPOINT`           | S3-compatible endpoint URL                     |
 | `R2_BUCKET`             | Bucket name for submissions                    |
 | `GITHUB_TOKEN`          | Optional. GitHub token for PR-based submissions |
+| `OAUTH_CLIENT_ID`       | Optional. OAuth client ID (enables auth)       |
+| `OAUTH_CLIENT_SECRET`   | Optional. OAuth client secret                  |
+| `PUBLIC_URL`            | Optional. Public URL for auth callbacks        |
+| `ADMIN_TOKEN`           | Optional. Enables admin API for key management |
 | `TUI_CMD`               | Override TUI command (default: compiled binary) |
 
 ## Deployment
@@ -341,6 +397,7 @@ mussheum/
       art.png                 # Artwork image
   server/
     main.go                   # SSH + HTTP server, PTY bridge, logging
+    auth.go                   # OAuth authentication + admin API
     submit.go                 # Submission handler + command middleware
     info.go                   # SSH info command handler
     www/                      # Embedded static website
@@ -361,6 +418,7 @@ mussheum/
       exit-screen.tsx         # Exit screen
       subscribe-prompt.tsx    # In-terminal newsletter subscription
       submit-prompt.tsx       # In-terminal GitHub PR submission
+      auth-screen.tsx         # OAuth authentication screen
       footer.tsx              # Keybinding hints
   scripts/
     stats.sh                    # Parse access log and report visitor stats

@@ -20,6 +20,14 @@
   "submitMethod": "github-pr",
   "submitRepo": "owner/repo",
 
+  "auth": {
+    "provider": "oauth",
+    "authorizeUrl": "https://provider.example.com/oauth/authorize",
+    "tokenUrl": "https://provider.example.com/oauth/token",
+    "profileUrl": "https://provider.example.com/api/me",
+    "profileNameField": "name"
+  },
+
   "hours": [
     {
       "days": [1, 3, 5],
