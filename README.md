@@ -12,7 +12,7 @@ ssh your-host             ssh your-host submit < art.zip
        v                            v
 +--------------+         +--------------+  +--------------+
 |  Go SSH +    |  spawns |  Bun/Ink TUI |  |  Submission   |
-|  HTTP Server |-------->|  (per session)|  |  Handler      |
+|  HTTP Server |-------->| (per session)|  |  Handler      |
 |  (Wish)      |   PTY   |              |  |  (-> R2)      |
 +--------------+         +--------------+  +--------------+
        |                         |
