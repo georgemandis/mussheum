@@ -321,13 +321,17 @@ func handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	redirectURI := fmt.Sprintf("%s/auth/callback", publicURL)
 
 	// Exchange code for access token
-	tokenResp, err := http.PostForm(authConfig.TokenURL, url.Values{
+	tokenReqBody := url.Values{
 		"grant_type":    {"authorization_code"},
 		"code":          {code},
 		"redirect_uri":  {redirectURI},
 		"client_id":     {clientID},
 		"client_secret": {clientSecret},
-	})
+	}
+	tokenReq, _ := http.NewRequest("POST", authConfig.TokenURL, strings.NewReader(tokenReqBody.Encode()))
+	tokenReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	tokenReq.Header.Set("Accept", "application/json")
+	tokenResp, err := http.DefaultClient.Do(tokenReq)
 	if err != nil {
 		log.Error("OAuth token exchange failed", "error", err)
 		http.Error(w, "Authentication failed. Please try again.", http.StatusInternalServerError)
