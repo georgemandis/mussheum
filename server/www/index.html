@@ -170,6 +170,22 @@
     <span class="output">Submit artwork: </span><span class="cmd">ssh </span><span class="arg">your-host.example.com</span> <span class="cmd">submit</span> <span style="color: var(--dim);">&lt;</span> <span style="color: var(--white);">submission.zip</span>
   </div>
 
+  <div class="line">
+    <span class="prompt">$ </span><span class="cmd">cat </span><span class="arg">fingerprint.txt</span>
+  </div>
+  <div class="line"></div>
+  <div class="line">
+    <span class="output" id="fingerprint-value">loading...</span>
+  </div>
+  <div class="line"></div>
+  <div class="line">
+    <span class="comment"># add to ~/.ssh/known_hosts to skip the fingerprint prompt:</span>
+  </div>
+  <div class="line line-interactive" tabindex="0" onclick="copyKnownHost(this)" onkeydown="event.key==='Enter'&&copyKnownHost(this)">
+    <span class="output" id="known-hosts-value" style="font-size: 11px; opacity: 0.6;">loading...</span>
+    <span class="copy-btn">copy</span>
+  </div>
+
   <div class="line"></div>
 
   </details>
@@ -192,6 +208,28 @@
         }, 2000);
       });
     }
+
+    function copyKnownHost(el) {
+      const text = document.getElementById("known-hosts-value").textContent;
+      if (!text || text === "loading..." || text === "unavailable") return;
+      copyCommand(el, text);
+    }
+
+    let fingerprintLoaded = false;
+    document.querySelector("details").addEventListener("toggle", function () {
+      if (!this.open || fingerprintLoaded) return;
+      fingerprintLoaded = true;
+      fetch("/api/fingerprint")
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById("fingerprint-value").textContent = data.fingerprint;
+          document.getElementById("known-hosts-value").textContent = data.knownHosts || "unavailable";
+        })
+        .catch(() => {
+          document.getElementById("fingerprint-value").textContent = "unavailable";
+          document.getElementById("known-hosts-value").textContent = "unavailable";
+        });
+    });
   </script>
 </body>
 </html>
