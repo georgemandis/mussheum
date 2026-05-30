@@ -106,6 +106,7 @@ A full example config with all available fields is also provided in `gallery/con
 | `splash`           | string                | Optional. Splash screen mode: `"bigtext"`, `"logo"`, `"ascii"`, or `"image"` (default `"bigtext"`) |
 | `submitMethod`     | string                | Optional. Set to `"github-pr"` to enable in-TUI submissions via GitHub PRs |
 | `submitRepo`       | string                | Required when `submitMethod` is set. GitHub repo in `owner/repo` format |
+| `showSubmitPrUrl`  | boolean               | Optional. Show the PR URL to the user after submission (default `false`) |
 | `auth`             | object                | Optional. Authentication config: `"allowlist"` or `"oauth"` (see below) |
 
 ### Authentication
@@ -252,7 +253,7 @@ Each piece lives in its own subdirectory under `gallery/`:
 gallery/
   my-artwork/
     meta.json
-    art.png
+    art.png        (or art.gif for animated artwork)
 ```
 
 `meta.json` fields:
@@ -332,6 +333,17 @@ Visitors press `u` in the gallery to submit. The TUI collects:
 
 The submission creates a branch, commits `gallery/<slug>/meta.json` and the artwork image, and opens a PR for review.
 
+## HTTP API
+
+### `/api/fingerprint`
+
+Returns the server's SSH host key fingerprint and `known_hosts` entry as JSON. Used by the website to display verification info for first-time visitors.
+
+```bash
+curl https://your-host.example.com/api/fingerprint
+# {"fingerprint":"SHA256:...","knownHosts":"your-host.example.com ssh-ed25519 AAAA..."}
+```
+
 ## SSH Info Command
 
 Query gallery metadata programmatically:
@@ -356,6 +368,7 @@ Returns JSON with name, tagline, exhibition, hours, status, and artwork count.
 | `OAUTH_CLIENT_SECRET`   | Optional. OAuth client secret                  |
 | `PUBLIC_URL`            | Optional. Public URL for auth callbacks        |
 | `ADMIN_TOKEN`           | Optional. Enables admin API for key management |
+| `SSH_HOST`              | Optional. Hostname for `/api/fingerprint` response (default: `localhost`) |
 | `TUI_CMD`               | Override TUI command (default: compiled binary) |
 
 ## Deployment
@@ -372,6 +385,17 @@ fly deploy
 ```
 
 The server exposes SSH on port 22 and HTTP on port 443 (via Fly's proxy).
+
+### Preview Generator
+
+Generate a PNG that mimics the half-block terminal rendering of an artwork piece:
+
+```bash
+bun scripts/preview.ts gallery/my-artwork
+bun scripts/preview.ts gallery/my-artwork --output preview.png --cols 80
+```
+
+Options: `--output` (default `preview.png`), `--cols` (default `80`), `--cell-size` (default `10`), `--bg-color` (default `#1a1b26`).
 
 ### Stats
 
@@ -454,6 +478,7 @@ mussheum/
       auth-screen.tsx         # OAuth authentication screen
       footer.tsx              # Keybinding hints
   scripts/
+    preview.ts                  # Generate half-block terminal preview PNGs
     stats.sh                    # Parse access log and report visitor stats
     fly-stats.sh                # Pull log from Fly and run stats locally
   worker/                       # Optional: Cloudflare Worker for email notifications

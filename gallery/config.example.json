@@ -19,6 +19,7 @@
 
   "submitMethod": "github-pr",
   "submitRepo": "owner/repo",
+  "showSubmitPrUrl": false,
 
   "auth": {
     "provider": "oauth",
